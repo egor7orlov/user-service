@@ -1,7 +1,7 @@
-import { authServiceInstance } from "../auth.service";
 import { Unauthorized } from "http-errors";
 import { Type } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
+import { AuthService } from "../auth.service";
 
 const tokenPayloadSchema = Type.Object({
   email: Type.String(),
@@ -15,7 +15,8 @@ export async function authenticateDecorator(req: any, res: any) {
     throw new Unauthorized();
   }
 
-  const tokenDecoded: any = authServiceInstance.verifyToken(token);
+  const authService = req.diScope.resolve("authService") as AuthService;
+  const tokenDecoded: any = authService.verifyToken(token);
   const tokenPayload = Value.Check(tokenPayloadSchema, tokenDecoded);
 
   if (!tokenPayload) {

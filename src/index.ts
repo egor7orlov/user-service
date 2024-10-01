@@ -1,59 +1,24 @@
 import "./common/env-validation";
 
-import fastify, { FastifyInstance } from "fastify";
+import fastify from "fastify";
 import { dbDataSource } from "./db/datasource";
 import { HttpError, InternalServerError } from "http-errors";
-import swagger from "@fastify/swagger";
-import swaggerUi from "@fastify/swagger-ui";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { authRoute } from "./modules/auth/auth.route";
 import { authenticateDecorator } from "./modules/auth/utils/authenticate.decorator";
 import { userRoute } from "./modules/user/user.route";
-
-async function configureSwagger(app: FastifyInstance) {
-  await app.register(swagger, {
-    openapi: {
-      components: {
-        securitySchemes: {
-          bearerAuth: {
-            type: "http",
-            scheme: "bearer",
-          },
-        },
-      },
-    },
-  });
-  await app.register(swaggerUi, {
-    routePrefix: "/docs",
-    uiConfig: {
-      docExpansion: "full",
-      deepLinking: false,
-    },
-    uiHooks: {
-      onRequest: function (request, reply, next) {
-        next();
-      },
-      preHandler: function (request, reply, next) {
-        next();
-      },
-    },
-    staticCSP: true,
-    transformStaticCSP: (header) => header,
-    transformSpecification: (swaggerObject, request, reply) => {
-      return swaggerObject;
-    },
-    transformSpecificationClone: true,
-  });
-}
+import { configureSwagger } from "./common/swagger";
+import { configureDiContainer } from "./common/di-container";
 
 async function bootstrap() {
   await dbDataSource.initialize();
 
-  const app = fastify({ logger: true }).withTypeProvider<TypeBoxTypeProvider>();
+  const app = fastify({ logger: false }).withTypeProvider<TypeBoxTypeProvider>();
+
+  await configureDiContainer(app);
+  await configureSwagger(app);
 
   app.decorate("authenticate", authenticateDecorator);
-
-  await configureSwagger(app);
 
   app.setErrorHandler((error, req, res) => {
     if (error instanceof HttpError) {

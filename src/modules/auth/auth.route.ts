@@ -1,11 +1,8 @@
 import { Type } from "@sinclair/typebox";
-import { authServiceInstance } from "./auth.service";
 import { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
+import { AuthService } from "./auth.service";
 
-export const authRoute: FastifyPluginAsyncTypebox = async function (
-  app,
-  opts,
-) {
+export const authRoute: FastifyPluginAsyncTypebox = async function (app, opts) {
   app.post(
     "/register",
     {
@@ -26,10 +23,12 @@ export const authRoute: FastifyPluginAsyncTypebox = async function (
     },
     async (req, res) => {
       const { email, password } = req.body;
-      const result = await authServiceInstance.register({
-        email,
-        password,
-      });
+      const result = await req.diScope
+        .resolve<AuthService>("authService")
+        .register({
+          email,
+          password,
+        });
 
       return {
         id: result.id,
@@ -59,11 +58,12 @@ export const authRoute: FastifyPluginAsyncTypebox = async function (
     },
     async (req, res) => {
       const { email, password } = req.body;
-
-      const result = await authServiceInstance.login({
-        email,
-        password,
-      });
+      const result = await req.diScope
+        .resolve<AuthService>("authService")
+        .login({
+          email,
+          password,
+        });
 
       return {
         id: result.id,

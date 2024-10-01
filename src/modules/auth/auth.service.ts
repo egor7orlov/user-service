@@ -3,22 +3,9 @@ import { Repository } from "typeorm";
 import { Conflict, NotFound, Unauthorized } from "http-errors";
 import bcrypt from "bcryptjs";
 import { sign, verify } from "jsonwebtoken";
-import { dbDataSource } from "../../db/datasource";
 
-class AuthService {
-  private static instance: AuthService;
-
-  private constructor(private readonly userRepo: Repository<UserEntity>) {}
-
-  public static getInstance() {
-    if (!AuthService.instance) {
-      AuthService.instance = new AuthService(
-        dbDataSource.getRepository(UserEntity),
-      );
-    }
-
-    return AuthService.instance;
-  }
+export class AuthService {
+  constructor(private readonly userRepo: Repository<UserEntity>) {}
 
   async register({ email, password }: { email: string; password: string }) {
     const existingUser = await this.userRepo.findOne({
@@ -83,5 +70,3 @@ class AuthService {
     };
   }
 }
-
-export const authServiceInstance = AuthService.getInstance();

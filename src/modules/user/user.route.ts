@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
 import { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
-import { userServiceInstance } from "./user.service";
+import { UserService } from "./user.service";
 
 export const userRoute: FastifyPluginAsyncTypebox = async function (app, opts) {
   app.post(
@@ -20,9 +20,9 @@ export const userRoute: FastifyPluginAsyncTypebox = async function (app, opts) {
     },
     async (req, res) => {
       const user = (req as any).user;
-      const result = await userServiceInstance.getUserByEmailOrFail(
-        user?.email,
-      );
+      const result = await req.diScope
+        .resolve<UserService>("userService")
+        .getUserByEmailOrFail(user?.email);
 
       return {
         id: result.id,
