@@ -1,0 +1,43 @@
+{
+  "name": "user-service",
+  "version": "1.0.0",
+  "description": "Generic user service",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "nodemon -r dotenv/config src/index.ts",
+    "migration:generate": "ts-node --project ./tsconfig.json -r dotenv/config node_modules/typeorm/cli.js migration:generate src/db/migrations/init -d src/db/datasource.ts",
+    "migration:run": "ts-node --project ./tsconfig.json -r dotenv/config node_modules/typeorm/cli.js migration:run -d src/db/datasource.ts"
+  },
+  "keywords": [
+    "user",
+    "service",
+    "rest",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/swagger": "^9.1.0",
+    "@fastify/swagger-ui": "^5.0.1",
+    "@fastify/type-provider-typebox": "^5.0.0",
+    "@sinclair/typebox": "^0.33.12",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.0.0",
+    "http-errors": "^2.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/http-errors": "^2.0.4",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.7.4",
+    "nodemon": "^3.1.7",
+    "prettier": "3.3.3",
+    "ts-node": "^10.9.2"
+  }
+}
