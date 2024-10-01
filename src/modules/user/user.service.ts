@@ -1,6 +1,7 @@
-import { UserEntity } from "../db/entities/user.entity";
+import { UserEntity } from "../../db/entities/user.entity";
 import { Repository } from "typeorm";
-import { dbDataSource } from "../db/datasource";
+import { dbDataSource } from "../../db/datasource";
+import { NotFound } from "http-errors";
 
 class UserService {
   private static instance: UserService;
@@ -19,10 +20,16 @@ class UserService {
     return UserService.instance;
   }
 
-  async getUserByEmail(email: string) {
-    return this.userRepo.findOne({
+  async getUserByEmailOrFail(email: string) {
+    const user = await this.userRepo.findOne({
       where: { email },
     });
+
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+
+    return user;
   }
 }
 

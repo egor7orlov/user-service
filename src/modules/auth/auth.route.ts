@@ -2,11 +2,13 @@ import { Type } from "@sinclair/typebox";
 import { authServiceInstance } from "./auth.service";
 import { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
 
-export const authPlugin: FastifyPluginAsyncTypebox = async function authRoute(app, opts: any) {
+export const authRoute: FastifyPluginAsyncTypebox = async function (
+  app,
+  opts,
+) {
   app.post(
     "/register",
     {
-      onRequest: [(app as any).authenticate],
       schema: {
         tags: ["Auth"],
         body: Type.Object({
@@ -18,7 +20,7 @@ export const authPlugin: FastifyPluginAsyncTypebox = async function authRoute(ap
             id: Type.String(),
             email: Type.String(),
             accessToken: Type.String(),
-          })
+          }),
         },
       },
     },
@@ -51,7 +53,7 @@ export const authPlugin: FastifyPluginAsyncTypebox = async function authRoute(ap
             id: Type.String(),
             email: Type.String(),
             accessToken: Type.String(),
-          })
+          }),
         },
       },
     },
@@ -70,4 +72,4 @@ export const authPlugin: FastifyPluginAsyncTypebox = async function authRoute(ap
       };
     },
   );
-}
+};

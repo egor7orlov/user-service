@@ -6,8 +6,9 @@ import { HttpError, InternalServerError } from "http-errors";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import { authPlugin } from "./auth/auth.plugin";
-import { authenticate } from "./auth/utils/authenticate";
+import { authRoute } from "./modules/auth/auth.route";
+import { authenticateDecorator } from "./modules/auth/utils/authenticate.decorator";
+import { userRoute } from "./modules/user/user.route";
 
 async function configureSwagger(app: FastifyInstance) {
   await app.register(swagger, {
@@ -50,7 +51,7 @@ async function bootstrap() {
 
   const app = fastify({ logger: true }).withTypeProvider<TypeBoxTypeProvider>();
 
-  app.decorate("authenticate", authenticate);
+  app.decorate("authenticate", authenticateDecorator);
 
   await configureSwagger(app);
 
@@ -67,7 +68,8 @@ async function bootstrap() {
     return "OK\n";
   });
 
-  await app.register(authPlugin, { prefix: "/auth" });
+  await app.register(authRoute, { prefix: "/auth" });
+  await app.register(userRoute, { prefix: "/user" });
 
   const address = await app.listen({
     port: +process.env.PORT!,
@@ -77,7 +79,14 @@ async function bootstrap() {
   console.log(`Server listening at ${address}`);
 }
 
-bootstrap().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+if (require.main === module) {
+  bootstrap().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+
+  process.on("unhandledRejection", (err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

@@ -1,9 +1,9 @@
-import { UserEntity } from "../db/entities/user.entity";
+import { UserEntity } from "../../db/entities/user.entity";
 import { Repository } from "typeorm";
 import { Conflict, NotFound, Unauthorized } from "http-errors";
 import bcrypt from "bcryptjs";
 import { sign, verify } from "jsonwebtoken";
-import { dbDataSource } from "../db/datasource";
+import { dbDataSource } from "../../db/datasource";
 
 class AuthService {
   private static instance: AuthService;
@@ -55,7 +55,7 @@ class AuthService {
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      throw new Unauthorized("Invalid password");
+      throw new Unauthorized();
     }
 
     const tokens = this.signTokens({ email, id: user.id });
