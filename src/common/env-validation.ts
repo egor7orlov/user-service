@@ -1,22 +1,19 @@
-import { Type } from "@sinclair/typebox";
-import { Value } from "@sinclair/typebox/value";
+import z from "zod";
 
-enum NodeEnv {
-  DEVELOPMENT = "development",
-  PRODUCTION = "production",
-  TEST = "test",
-}
+const z_number = z
+  .string()
+  .regex(/^\d+$/, "Must only contain digits")
+  .transform(Number);
+const envSchema = z.object({
+  NODE_ENV: z.enum(["development", "production", "test"]),
+  PORT: z_number,
+  JWT_SECRET: z.string(),
 
-const envSchema = Type.Object({
-  NODE_ENV: Type.Enum(NodeEnv),
-  PORT: Type.String(),
-  JWT_SECRET: Type.String(),
-
-  POSTGRES_HOST: Type.String(),
-  POSTGRES_PORT: Type.String(),
-  POSTGRES_USER: Type.String(),
-  POSTGRES_PASSWORD: Type.String(),
-  POSTGRES_DB: Type.String(),
+  PG_HOST: z.string(),
+  PG_PORT: z_number,
+  PG_USER: z.string(),
+  PG_PASS: z.string(),
+  PG_DB: z.string(),
 });
 
-Value.Parse(envSchema, process.env);
+envSchema.parse(process.env);

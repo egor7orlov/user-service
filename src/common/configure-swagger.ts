@@ -2,8 +2,8 @@ import { FastifyInstance } from "fastify";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 
-export async function configureSwagger(app: FastifyInstance) {
-  await app.register(swagger, {
+export function configureSwagger(app: FastifyInstance) {
+  app.register(swagger, {
     openapi: {
       components: {
         securitySchemes: {
@@ -15,10 +15,10 @@ export async function configureSwagger(app: FastifyInstance) {
       },
     },
   });
-  await app.register(swaggerUi, {
+  app.register(swaggerUi, {
     routePrefix: "/docs",
     uiConfig: {
-      docExpansion: "full",
+      docExpansion: "list",
       deepLinking: false,
     },
     uiHooks: {

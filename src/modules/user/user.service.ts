@@ -16,4 +16,13 @@ export class UserService {
 
     return user;
   }
+
+  async getManyUsersWithTotal({ page = 0, limit = 10 }: { page?: number; limit?: number }) {
+    const [users, total] = await this.userRepo.findAndCount({
+      skip: page * limit,
+      take: limit,
+    });
+
+    return { users, total };
+  }
 }

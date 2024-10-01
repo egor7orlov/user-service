@@ -1,34 +1,28 @@
-import { Type } from "@sinclair/typebox";
-import { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
 import { AuthService } from "./auth.service";
+import { DEP_NAME_AUTH_SERVICE } from "../../common/di/deps-names";
+import { loginInputSchema, loginResponseSchema } from "../../common/schemas/user.schema";
 
-export const authRoute: FastifyPluginAsyncTypebox = async function (app, opts) {
+export const authRoute = async function (app: any, opts: any) {
   app.post(
     "/register",
     {
       schema: {
         tags: ["Auth"],
-        body: Type.Object({
-          email: Type.String({ format: "email" }),
-          password: Type.String({ minLength: 8 }),
-        }),
+        body: loginInputSchema,
         response: {
-          200: Type.Object({
-            id: Type.String(),
-            email: Type.String(),
-            accessToken: Type.String(),
-          }),
+          200: loginResponseSchema,
         },
       },
     },
-    async (req, res) => {
+    async (req: any, res: any) => {
       const { email, password } = req.body;
-      const result = await req.diScope
-        .resolve<AuthService>("authService")
-        .register({
-          email,
-          password,
-        });
+      const authService = req.diScope.resolve(
+        DEP_NAME_AUTH_SERVICE,
+      ) as AuthService;
+      const result = await authService.register({
+        email,
+        password,
+      });
 
       return {
         id: result.id,
@@ -43,27 +37,21 @@ export const authRoute: FastifyPluginAsyncTypebox = async function (app, opts) {
     {
       schema: {
         tags: ["Auth"],
-        body: Type.Object({
-          email: Type.String({ format: "email" }),
-          password: Type.String({ minLength: 1 }),
-        }),
+        body: loginInputSchema,
         response: {
-          200: Type.Object({
-            id: Type.String(),
-            email: Type.String(),
-            accessToken: Type.String(),
-          }),
+          200: loginResponseSchema,
         },
       },
     },
-    async (req, res) => {
+    async (req: any, res: any) => {
       const { email, password } = req.body;
-      const result = await req.diScope
-        .resolve<AuthService>("authService")
-        .login({
-          email,
-          password,
-        });
+      const authService = req.diScope.resolve(
+        DEP_NAME_AUTH_SERVICE,
+      ) as AuthService;
+      const result = await authService.login({
+        email,
+        password,
+      });
 
       return {
         id: result.id,

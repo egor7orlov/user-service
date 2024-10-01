@@ -1,30 +1,38 @@
 import { Unauthorized } from "http-errors";
-import { Type } from "@sinclair/typebox";
-import { Value } from "@sinclair/typebox/value";
 import { AuthService } from "../auth.service";
+import z from "zod";
+import fp from "fastify-plugin";
+import { DEP_NAME_AUTH_SERVICE } from "../../../common/di/deps-names";
 
-const tokenPayloadSchema = Type.Object({
-  email: Type.String(),
-  id: Type.String(),
+const tokenPayloadSchema = z.object({
+  email: z.string(),
+  id: z.string(),
 });
 
-export async function authenticateDecorator(req: any, res: any) {
-  const token = req.headers.authorization?.split(" ")?.[1];
+export const authenticateDecorator = fp(async function (fastify) {
+  fastify.decorate(
+    "authenticate",
+    async function (req: any, res: any): Promise<void> {
+      const token = req.headers.authorization?.split(" ")?.[1];
 
-  if (!token) {
-    throw new Unauthorized();
-  }
+      if (!token) {
+        throw new Unauthorized();
+      }
 
-  const authService = req.diScope.resolve("authService") as AuthService;
-  const tokenDecoded: any = authService.verifyToken(token);
-  const tokenPayload = Value.Check(tokenPayloadSchema, tokenDecoded);
+      const authService = req.diScope.resolve(
+        DEP_NAME_AUTH_SERVICE,
+      ) as AuthService;
+      const tokenDecoded: any = authService.verifyToken(token);
+      const tokenPayload = tokenPayloadSchema.safeParse(tokenDecoded);
 
-  if (!tokenPayload) {
-    throw new Unauthorized();
-  }
+      if (tokenPayload.error) {
+        throw new Unauthorized();
+      }
 
-  req.user = {
-    email: tokenDecoded?.email,
-    id: tokenDecoded?.id,
-  };
-}
+      req.user = {
+        email: tokenPayload?.data?.email,
+        id: tokenPayload?.data?.id,
+      };
+    },
+  );
+});

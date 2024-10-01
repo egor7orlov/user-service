@@ -1,40 +1,21 @@
 import "./common/env-validation";
 
 import fastify from "fastify";
+import { configureSwagger } from "./common/configure-swagger";
 import { dbDataSource } from "./db/datasource";
-import { HttpError, InternalServerError } from "http-errors";
-import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import { authRoute } from "./modules/auth/auth.route";
 import { authenticateDecorator } from "./modules/auth/utils/authenticate.decorator";
-import { userRoute } from "./modules/user/user.route";
-import { configureSwagger } from "./common/swagger";
-import { configureDiContainer } from "./common/di-container";
+import { configureHandlers } from "./common/configure-handlers";
+import { configureDiContainer } from "./common/di/configure-di-container";
 
 async function bootstrap() {
   await dbDataSource.initialize();
 
-  const app = fastify({ logger: false }).withTypeProvider<TypeBoxTypeProvider>();
+  const app = fastify();
 
-  await configureDiContainer(app);
-  await configureSwagger(app);
-
-  app.decorate("authenticate", authenticateDecorator);
-
-  app.setErrorHandler((error, req, res) => {
-    if (error instanceof HttpError) {
-      throw error;
-    } else {
-      console.error(error);
-      throw new InternalServerError();
-    }
-  });
-
-  app.get("/health", async (req, res) => {
-    return "OK\n";
-  });
-
-  await app.register(authRoute, { prefix: "/auth" });
-  await app.register(userRoute, { prefix: "/user" });
+  configureDiContainer(app);
+  app.register(authenticateDecorator);
+  configureSwagger(app);
+  configureHandlers(app);
 
   const address = await app.listen({
     port: +process.env.PORT!,

@@ -6,7 +6,7 @@ export class UserEntity extends BaseWithMetadata {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ type: "varchar", length: 255 })
+  @Column({ type: "varchar", length: 255, unique: true })
   email!: string;
 
   @Column({ type: "varchar", length: 255 })
